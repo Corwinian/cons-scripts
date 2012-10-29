@@ -12,17 +12,25 @@ $update_dir="C:\For_Cons\пополнение\"
 
 $comare_dir="Z:\COMMON\" 
 
+$ver="0.1"
+$ProgrammName="cons update"
+
+$quest_date = Get-Date ((Get-Date).AddDays(-1)) -f "MM_dd_yy"
+
+# Функция вывода информации на экран и записи в лог
+./Set-Functions.ps1 #Инициализация функций
+$global:logfilename = "log`\"+ $ProgrammName + "_" + $quest_date +"_.log"
+write-log "$ProgrammName (ver $ver) started."
+
 #(Get-Date).DayOfWeek() 
 
-$quest_date = Get-Date ((Get-Date).AddDays(-1)) -f "MM_dd_yy"	
-	
 function create_quests($arg){
 	$cons_type = $arg
-	echo ("cons type - " + $cons_type)
+	write-log ("cons type - " + $cons_type)
 	
-	echo ("date - " + $quest_date)
+	write-log ("date - " + $quest_date)
 
-	echo "create quests"
+	write-log "create quests"
 	start -wait ($cons_path + $cons_type + "cons.exe ") -argumentList ("/adm /quest /BASE* /yes")
 
 	#убиваем фиктивный запрос по law если приморский выпуск
@@ -30,9 +38,9 @@ function create_quests($arg){
 		rm ($cons_path + $cons_type + "send\law*")
 	}
 	
-	echo "move quests"
+	write-log "move quests"
 	$send_dir = $quest_dir + $cons_type + $quest_date
-	echo ("send dir"+$send_dir)
+	write-log ("send dir"+$send_dir)
 	
 	mkdir $send_dir
 	mv ($cons_path + $cons_type + "send\*") $send_dir
@@ -44,27 +52,28 @@ function update_base ($arg){
 	$bases = $arg[1]
 	$inet_res = $arg[2]
 
-	echo "create BASELIST"
-	echo $bases | out-file -encoding ascii ($cons_path + $cons_type +"/base/BASELIST.CFG")
+	write-log "create BASELIST"
+	write-log $bases | out-file -encoding ascii ($cons_path + $cons_type +"/base/BASELIST.CFG")
 
 	create_quests($cons_type)
 	
-	echo "update cons"
+	write-log "update cons"
 	start -wait ($cons_path + $cons_type + "cons.exe ") -argumentList ("/adm " + $inet_res + " /receive_inet /yes /base*")
 
-	echo "remove BASELIST"
+	write-log "remove BASELIST"
 	rm ($cons_path + $cons_type + "/base/BASELIST.CFG")
-	echo "update dicts"
+	write-log "update dicts"
 	start -wait ($cons_path + $cons_type + "cons.exe ") -argumentList ("/adm /reindex0")
 }
 
-echo "save quest buh"
+write-log "save quest buh"
 create_quests($cons_buh_path)
-echo "save quest ros"
+write-log "save quest ros"
 create_quests($cons_ros_path)
-echo "---------------------------------------------------------------------------"
-echo "- эталоны                                                                  "
-echo "---------------------------------------------------------------------------"
+write-log
+"---------------------------------------------------------------------------\n
+- эталоны                                                                  \n
+---------------------------------------------------------------------------"
 
 #$needed_bases = @("law" );
 $needed_bases = @(
@@ -75,41 +84,41 @@ $needed_bases = @(
 
 update_base $cons_et_path, $needed_bases, "/inet_host";
 
-echo "end reg update"
+write-log "end reg update"
 
-echo "---------------------------------------------------------------------------"
-echo "- Приморский                                                             --"
-echo "---------------------------------------------------------------------------"
+write-log"---------------------------------------------------------------------------\n
+- Приморский                                                             --\n
+---------------------------------------------------------------------------"
 
-echo "create prim"
+write-log "create prim"
 $prim_needed_bases = @("law", "raps005", "raps006", "rarb020", "rbas020", "rlaw020")  #law добавлденн из_за того что без него не создаються запросы
 
 update_base $cons_prim_path, $prim_needed_bases, "/inet_ext";
 
-echo "---------------------------------------------------------------------------"
-echo "- create et and prim update                                                "
-echo "---------------------------------------------------------------------------"
+write-log "---------------------------------------------------------------------------\n
+- create et and prim update                                                \n
+---------------------------------------------------------------------------"
 
 $shift_days = $args[0]
 
 $start_date = Get-Date ((Get-Date).AddDays($shift_days)) -f "MM_dd_yy"
 $update_date = Get-Date ((Get-Date).AddDays($args[1])) -f "MM_dd_yy"
 
-echo "create update dir"
+write-log "create update dir"
 mkdir ($update_dir+$update_date)
 
-echo ("quest dir - " + $start_date)
-echo ("update dir dir - " + $update_date)
+write-log ("quest dir - " + $start_date)
+write-log ("update dir dir - " + $update_date)
 
 function create_update ($arg){
 	$cons_types = $arg[0]
 	$cons_path = $arg[1]
-	echo "copy cons quests"
+	write-log "copy cons quests"
 	foreach($cons in $cons_types){
 		cp ($quest_dir + $cons + $start_date + "\*") ($cons_path + "receive/" )
 	}
 	
-	echo "creare cons answers"
+	write-log "creare cons answers"
 	start -wait ($cons_path + "cons.exe ") -argumentList ("/adm /answer /Base*")
 	mv ($cons_path + "send\*") ($update_dir+$update_date+"\")
 }

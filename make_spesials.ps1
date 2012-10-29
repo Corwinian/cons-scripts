@@ -9,6 +9,16 @@ $cons_et_path="Cons_Reg\"
 $cons_prim_path="Cons_Prim\"
 $quest_dir="C:\For_Cons\quests\" 
 
+$ver="0.1"
+$ProgrammName="make specials"
+
+
+# Функция вывода информации на экран и записи в лог
+./Set-Functions.ps1 #Инициализация функций
+$global:logfilename = "log`\"+ $ProgrammName +".log"
+write-log "$ProgrammName (ver $ver) started."
+
+
 function create_special($arg){
 	$res_folder = $arg
 	$ext_folder = $arg

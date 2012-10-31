@@ -53,12 +53,13 @@ function update_base ($arg){
 	$inet_res = $arg[2]
 
 	write-log "create BASELIST"
-	write-log $bases | out-file -encoding ascii ($cons_path + $cons_type +"/base/BASELIST.CFG")
+	echo $bases | out-file -encoding ascii ($cons_path + $cons_type +"/base/BASELIST.CFG")
 
 	create_quests($cons_type)
 	
-	write-log "update cons"
-	start -wait ($cons_path + $cons_type + "cons.exe ") -argumentList ("/adm " + $inet_res + " /receive_inet /yes /base*")
+	$args = ("/adm $inet_res /base* /receive_inet")
+	write-log "update cons with $args"
+	start -wait ($cons_path + $cons_type + "cons.exe ") -argumentList ($args)
 
 	write-log "remove BASELIST"
 	rm ($cons_path + $cons_type + "/base/BASELIST.CFG")
@@ -80,20 +81,20 @@ $needed_bases = @(
 	"adv", "arb", 	"cji", "cmb", "exp", "int", "kor", "krbo", "law", "marb", "med", "pap", 
 	"pbi", "pbun", "pdr", "pgu", "pkbo", "pkp", "pks", "pkv", "ppn", "pps", "psp", "psr"
 	"qsbo", "quest", "scn", "sdv", "sms", "soj", "spb", "spv",	"ssk", "ssz", "str", "sur", "svs", "svv", "szs",
-	"rlaw011", "rlaw080", "rlaw210", "rlaw284", 	"rlaw439")
+	"rlaw011", "rlaw080", "rlaw210", "rlaw284", "rlaw439")
 
 update_base $cons_et_path, $needed_bases, "/inet_host";
 
 write-log "end reg update"
 
-write-log"---------------------------------------------------------------------------\n
-- Приморский                                                             --\n
----------------------------------------------------------------------------"
+write-log ("---------------------------------------------------------------------------\n"+
+"- Приморский                                                             --\n"+
+"---------------------------------------------------------------------------")
 
 write-log "create prim"
 $prim_needed_bases = @("law", "raps005", "raps006", "rarb020", "rbas020", "rlaw020")  #law добавлденн из_за того что без него не создаються запросы
 
-update_base $cons_prim_path, $prim_needed_bases, "/inet_ext";
+#update_base $cons_prim_path, $prim_needed_bases, "/inet_ext";
 
 write-log "---------------------------------------------------------------------------\n
 - create et and prim update                                                \n
